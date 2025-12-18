@@ -1,0 +1,2308 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Temple Donation Management</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --saffron: #ff9933;
+        --saffron-light: #ffb366;
+        --saffron-dark: #e6851a;
+        --gold: #d4af37;
+        --gold-light: #f4d03f;
+        --cream: #fff8e7;
+        --cream-dark: #f5e6c8;
+        --deep-orange: #c2410c;
+        --temple-red: #b91c1c;
+        --white: #ffffff;
+        --gray-100: #f7f7f7;
+        --gray-200: #e5e5e5;
+        --gray-300: #d4d4d4;
+        --gray-500: #737373;
+        --gray-700: #404040;
+        --gray-900: #171717;
+        --success: #22c55e;
+        --shadow: 0 4px 20px rgba(255, 153, 51, 0.15);
+        --shadow-lg: 0 10px 40px rgba(255, 153, 51, 0.2);
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(
+          135deg,
+          var(--cream) 0%,
+          var(--cream-dark) 100%
+        );
+        min-height: 100vh;
+        color: var(--gray-700);
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        font-family: "Playfair Display", serif;
+        color: var(--gray-900);
+      }
+
+      /* Layout */
+      .app-container {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        width: 280px;
+        background: linear-gradient(
+          180deg,
+          var(--saffron) 0%,
+          var(--deep-orange) 100%
+        );
+        padding: 2rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        height: 100vh;
+        z-index: 100;
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar-header {
+        text-align: center;
+        margin-bottom: 3rem;
+      }
+      .sidebar-logo img,
+      .default-logo {
+        width: 150%;
+        max-width: 120px; /* logo size */
+        height: auto;
+        display: block;
+        margin: 0 auto 0.5rem; /* center and add bottom spacing */
+        border-radius: 50%;
+      }
+
+      .sidebar-title {
+        font-family: "Playfair Display", serif;
+        font-size: 1.5rem;
+        color: var(--white);
+        font-weight: 600;
+      }
+
+      .sidebar-subtitle {
+        font-size: 0.875rem;
+        color: rgba(255, 255, 255, 0.8);
+        margin-top: 0.25rem;
+      }
+
+      .nav-menu {
+        list-style: none;
+        flex: 1;
+      }
+
+      .nav-item {
+        margin-bottom: 0.5rem;
+      }
+
+      .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 1.25rem;
+        color: rgba(255, 255, 255, 0.85);
+        text-decoration: none;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      .nav-link:hover,
+      .nav-link.active {
+        background: rgba(255, 255, 255, 0.2);
+        color: var(--white);
+        transform: translateX(5px);
+      }
+
+      .nav-link svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      /* Main Content */
+      .main-content {
+        flex: 1;
+        margin-left: 280px;
+        padding: 2rem;
+        min-height: 100vh;
+      }
+
+      .page-header {
+        margin-bottom: 2rem;
+      }
+
+      .page-title {
+        font-size: 2rem;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+      }
+
+      .page-subtitle {
+        color: var(--gray-500);
+      }
+
+      /* Cards */
+      .card {
+        background: var(--white);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      /* Stats Grid */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .stat-card {
+        background: var(--white);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        transition: transform 0.3s ease;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-3px);
+      }
+
+      .stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+      }
+
+      .stat-icon.donations {
+        background: linear-gradient(
+          135deg,
+          var(--saffron-light),
+          var(--saffron)
+        );
+      }
+
+      .stat-icon.expenses {
+        background: linear-gradient(135deg, #fca5a5, var(--temple-red));
+      }
+
+      .stat-icon.balance {
+        background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      }
+
+      .stat-icon.goal {
+        background: linear-gradient(135deg, #86efac, var(--success));
+      }
+
+      .stat-content h3 {
+        font-size: 0.875rem;
+        color: var(--gray-500);
+        font-weight: 500;
+        font-family: "Poppins", sans-serif;
+        margin-bottom: 0.25rem;
+      }
+
+      .stat-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--gray-900);
+      }
+
+      .stat-change {
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+      }
+
+      .stat-change.positive {
+        color: var(--success);
+      }
+
+      /* Progress Card */
+      .progress-card {
+        background: linear-gradient(
+          135deg,
+          var(--saffron) 0%,
+          var(--deep-orange) 100%
+        );
+        color: var(--white);
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .progress-card h3 {
+        color: var(--white);
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+      }
+
+      .progress-bar-container {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 999px;
+        height: 12px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+      }
+
+      .progress-bar {
+        height: 100%;
+        background: var(--white);
+        border-radius: 999px;
+        transition: width 0.5s ease;
+      }
+
+      .progress-stats {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.875rem;
+      }
+
+      /* Charts Grid */
+      .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .chart-card {
+        padding: 1.5rem;
+      }
+
+      .chart-card h3 {
+        font-size: 1.125rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--cream);
+      }
+
+      .chart-container {
+        height: 250px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Activity Section */
+      .activity-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .activity-card h3 {
+        font-size: 1.125rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--cream);
+      }
+
+      .activity-list {
+        list-style: none;
+      }
+
+      .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--gray-200);
+      }
+
+      .activity-item:last-child {
+        border-bottom: none;
+      }
+
+      .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .activity-icon.donation {
+        background: rgba(255, 153, 51, 0.15);
+        color: var(--saffron);
+      }
+
+      .activity-icon.expense {
+        background: rgba(185, 28, 28, 0.15);
+        color: var(--temple-red);
+      }
+
+      .activity-details {
+        flex: 1;
+      }
+
+      .activity-name {
+        font-weight: 500;
+        color: var(--gray-900);
+      }
+
+      .activity-date {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+      }
+
+      .activity-amount {
+        font-weight: 600;
+      }
+
+      .activity-amount.donation {
+        color: var(--success);
+      }
+
+      .activity-amount.expense {
+        color: var(--temple-red);
+      }
+
+      /* Table Styles */
+      .table-container {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--gray-200);
+      }
+
+      th {
+        background: var(--cream);
+        font-weight: 600;
+        color: var(--gray-700);
+        font-size: 0.875rem;
+      }
+
+      tr:hover {
+        background: var(--gray-100);
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        font-family: "Poppins", sans-serif;
+        font-size: 0.875rem;
+      }
+
+      .btn-primary {
+        background: linear-gradient(
+          135deg,
+          var(--saffron) 0%,
+          var(--deep-orange) 100%
+        );
+        color: var(--white);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(255, 153, 51, 0.4);
+      }
+
+      .btn-secondary {
+        background: var(--gray-200);
+        color: var(--gray-700);
+      }
+
+      .btn-secondary:hover {
+        background: var(--gray-300);
+      }
+
+      .btn-danger {
+        background: var(--temple-red);
+        color: var(--white);
+      }
+
+      .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.75rem;
+      }
+
+      /* Search & Filters */
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        align-items: center;
+      }
+
+      .search-box {
+        flex: 1;
+        min-width: 250px;
+        position: relative;
+      }
+
+      .search-box input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 2px solid var(--gray-200);
+        border-radius: 10px;
+        font-family: "Poppins", sans-serif;
+        transition: border-color 0.3s ease;
+      }
+
+      .search-box input:focus {
+        outline: none;
+        border-color: var(--saffron);
+      }
+
+      .search-box svg {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-500);
+        width: 18px;
+        height: 18px;
+      }
+
+      select {
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--gray-200);
+        border-radius: 10px;
+        font-family: "Poppins", sans-serif;
+        background: var(--white);
+        cursor: pointer;
+      }
+
+      select:focus {
+        outline: none;
+        border-color: var(--saffron);
+      }
+
+      /* Modal */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+      }
+
+      .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .modal {
+        background: var(--white);
+        border-radius: 20px;
+        padding: 2rem;
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+      }
+
+      .modal-overlay.active .modal {
+        transform: scale(1);
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .modal-header h2 {
+        font-size: 1.5rem;
+      }
+
+      .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--gray-500);
+      }
+
+      /* Form */
+      .form-group {
+        margin-bottom: 1.25rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--gray-700);
+      }
+
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--gray-200);
+        border-radius: 10px;
+        font-family: "Poppins", sans-serif;
+        transition: border-color 0.3s ease;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: var(--saffron);
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+      }
+
+      /* Badge */
+      .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+
+      .badge-cash {
+        background: rgba(34, 197, 94, 0.15);
+        color: #16a34a;
+      }
+
+      .badge-upi {
+        background: rgba(99, 102, 241, 0.15);
+        color: #4f46e5;
+      }
+
+      .badge-bank {
+        background: rgba(59, 130, 246, 0.15);
+        color: #2563eb;
+      }
+
+      .badge-cheque {
+        background: rgba(245, 158, 11, 0.15);
+        color: #d97706;
+      }
+
+      /* Action Buttons */
+      .action-btns {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+      }
+
+      .action-btn.edit {
+        background: rgba(255, 153, 51, 0.15);
+        color: var(--saffron);
+      }
+
+      .action-btn.edit:hover {
+        background: var(--saffron);
+        color: var(--white);
+      }
+
+      .action-btn.delete {
+        background: rgba(185, 28, 28, 0.15);
+        color: var(--temple-red);
+      }
+
+      .action-btn.delete:hover {
+        background: var(--temple-red);
+        color: var(--white);
+      }
+
+      /* Toast */
+      .toast-container {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 2000;
+      }
+
+      .toast {
+        background: var(--white);
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        animation: slideIn 0.3s ease;
+      }
+
+      .toast.success {
+        border-left: 4px solid var(--success);
+      }
+
+      .toast.error {
+        border-left: 4px solid var(--temple-red);
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      /* Page Sections */
+      .page-section {
+        display: none;
+      }
+
+      .page-section.active {
+        display: block;
+      }
+
+      /* Mobile Styles */
+      .mobile-menu-btn {
+        display: none;
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 101;
+        background: var(--saffron);
+        color: var(--white);
+        border: none;
+        padding: 0.75rem;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          transform: translateX(-100%);
+        }
+
+        .sidebar.open {
+          transform: translateX(0);
+        }
+
+        .main-content {
+          margin-left: 0;
+          padding: 1rem;
+          padding-top: 4rem;
+        }
+
+        .mobile-menu-btn {
+          display: block;
+        }
+
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .charts-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .activity-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .toolbar {
+          flex-direction: column;
+        }
+
+        .search-box {
+          width: 100%;
+        }
+      }
+
+      /* Empty State */
+      .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--gray-500);
+      }
+
+      .empty-state svg {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <line x1="3" y1="12" x2="21" y2="12" />
+        <line x1="3" y1="6" x2="21" y2="6" />
+        <line x1="3" y1="18" x2="21" y2="18" />
+      </svg>
+    </button>
+
+    <div class="app-container">
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-logo">
+            <img src="{% static 'img/img.jpg' %}" alt="Temple Logo" />
+          </div>
+          <h1 class="sidebar-title">Sri Lakshmi Kotha Venkataramana Swamy</h1>
+          <br />
+          <p class="sidebar-subtitle">Donation Management</p>
+        </div>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a
+              href="#"
+              class="nav-link active"
+              data-page="dashboard"
+              onclick="showPage('dashboard')"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+              Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              href="#"
+              class="nav-link"
+              data-page="donations"
+              onclick="showPage('donations')"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
+                />
+              </svg>
+              Donations
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              href="#"
+              class="nav-link"
+              data-page="expenses"
+              onclick="showPage('expenses')"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect width="20" height="14" x="2" y="5" rx="2" />
+                <line x1="2" x2="22" y1="10" y2="10" />
+              </svg>
+              Expenses
+            </a>
+          </li>
+        </ul>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Dashboard Page -->
+        <section id="dashboard" class="page-section active">
+          <div class="page-header">
+            <h1 class="page-title">🙏 Temple Renovation Fund</h1>
+            <p class="page-subtitle">
+              Track donations and expenses for our sacred temple renovation
+            </p>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="stats-grid" id="stats-grid">
+            <!-- Stats will be populated by JS -->
+          </div>
+
+          <!-- Progress Card -->
+          <div class="card progress-card" id="progress-card">
+            <!-- Progress will be populated by JS -->
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="activity-grid">
+            <div class="card activity-card">
+              <h3>🙏 Recent Donations</h3>
+              <ul class="activity-list" id="recent-donations">
+                <!-- Will be populated by JS -->
+              </ul>
+            </div>
+            <div class="card activity-card">
+              <h3>💰 Recent Expenses</h3>
+              <ul class="activity-list" id="recent-expenses">
+                <!-- Will be populated by JS -->
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- Donations Page -->
+        <section id="donations" class="page-section">
+          <div class="page-header">
+            <h1 class="page-title">💝 Donor Management</h1>
+            <p class="page-subtitle">Manage and track all temple donations</p>
+          </div>
+
+          <div class="card">
+            <div class="toolbar">
+              <div class="search-box">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.3-4.3" />
+                </svg>
+                <input
+                  type="text"
+                  id="donor-search"
+                  placeholder="Search donors..."
+                  onkeyup="filterDonors()"
+                />
+              </div>
+              <select id="payment-filter" onchange="filterDonors()">
+                <option value="">All Payment Methods</option>
+                <option value="Cash">Cash</option>
+                <option value="UPI">UPI</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+                <option value="Cheque">Cheque</option>
+              </select>
+              <button class="btn btn-primary" onclick="openDonorModal()">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M5 12h14" />
+                  <path d="M12 5v14" />
+                </svg>
+                Add Donor
+              </button>
+            </div>
+
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Donor Name</th>
+                    <th>Contact</th>
+                    <th>Amount</th>
+                    <th>Payment Method</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="donors-table">
+                  <!-- Will be populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Expenses Page -->
+        <section id="expenses" class="page-section">
+          <div class="page-header">
+            <h1 class="page-title">💰 Expense Management</h1>
+            <p class="page-subtitle">Track all renovation expenses</p>
+          </div>
+
+          <div class="card">
+            <div class="toolbar">
+              <div class="search-box">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.3-4.3" />
+                </svg>
+                <input
+                  type="text"
+                  id="expense-search"
+                  placeholder="Search expenses..."
+                  onkeyup="filterExpenses()"
+                />
+              </div>
+              <select id="category-filter" onchange="filterExpenses()">
+                <option value="">All Categories</option>
+                <option value="Construction">Construction</option>
+                <option value="Materials">Materials</option>
+                <option value="Labor">Labor</option>
+                <option value="Decoration">Decoration</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Plumbing">Plumbing</option>
+                <option value="Other">Other</option>
+              </select>
+              <button class="btn btn-primary" onclick="openExpenseModal()">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M5 12h14" />
+                  <path d="M12 5v14" />
+                </svg>
+                Add Expense
+              </button>
+            </div>
+
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Notes</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="expenses-table">
+                  <!-- Will be populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Donor Modal -->
+    <div class="modal-overlay" id="donor-modal">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 id="donor-modal-title">Add New Donor</h2>
+          <button class="modal-close" onclick="closeDonorModal()">
+            &times;
+          </button>
+        </div>
+        <form id="donor-form" onsubmit="saveDonor(event)">
+          {% csrf_token %}
+          <input type="hidden" id="donor-id" />
+          <div class="form-group">
+            <label for="donor-name">Donor Name *</label>
+            <input type="text" id="donor-name" required />
+          </div>
+          <div class="form-group">
+            <label for="donor-email">Email</label>
+            <input type="email" id="donor-email" />
+          </div>
+          <div class="form-group">
+            <label for="donor-phone">Phone</label>
+            <input type="tel" id="donor-phone" />
+          </div>
+          <div class="form-group">
+            <label for="donor-amount">Donation Amount (₹) *</label>
+            <input type="number" id="donor-amount" min="1" required />
+          </div>
+          <div class="form-group">
+            <label for="donor-payment">Payment Method *</label>
+            <select id="donor-payment" required>
+              <option value="Cash">Cash</option>
+              <option value="UPI">UPI</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Cheque">Cheque</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="donor-date">Date *</label>
+            <input type="date" id="donor-date" required />
+          </div>
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              onclick="closeDonorModal()"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">Save Donor</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Expense Modal -->
+    <div class="modal-overlay" id="expense-modal">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 id="expense-modal-title">Add New Expense</h2>
+          <button class="modal-close" onclick="closeExpenseModal()">
+            &times;
+          </button>
+        </div>
+        <form id="expense-form" onsubmit="saveExpense(event)">
+          {% csrf_token %}
+          <input type="hidden" id="expense-id" />
+          <div class="form-group">
+            <label for="expense-title">Expense Title *</label>
+            <input type="text" id="expense-title" required />
+          </div>
+          <div class="form-group">
+            <label for="expense-category">Category *</label>
+            <select id="expense-category" required>
+              <option value="Construction">Construction</option>
+              <option value="Materials">Materials</option>
+              <option value="Labor">Labor</option>
+              <option value="Decoration">Decoration</option>
+              <option value="Electrical">Electrical</option>
+              <option value="Plumbing">Plumbing</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="expense-amount">Amount (₹) *</label>
+            <input type="number" id="expense-amount" min="1" required />
+          </div>
+          <div class="form-group">
+            <label for="expense-date">Date *</label>
+            <input type="date" id="expense-date" required />
+          </div>
+          <div class="form-group">
+            <label for="expense-notes">Notes</label>
+            <textarea id="expense-notes" rows="3"></textarea>
+          </div>
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              onclick="closeExpenseModal()"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">Save Expense</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+      // ============ CONFIGURATION ============
+      const API_BASE_URL = "/api"; // Django API endpoint
+      const RENOVATION_GOAL = 5000000; // 50 Lakhs
+
+      // Store data globally
+      let currentDonors = [];
+      let currentExpenses = [];
+
+      // ============ UTILITY FUNCTIONS ============
+      function formatCurrency(amount) {
+        if (!amount && amount !== 0) return "₹0";
+        return new Intl.NumberFormat("en-IN", {
+          style: "currency",
+          currency: "INR",
+          maximumFractionDigits: 0,
+        }).format(amount);
+      }
+
+      function formatDate(dateStr) {
+        if (!dateStr) return "";
+        try {
+          const date = new Date(dateStr);
+          return date.toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          });
+        } catch (e) {
+          return dateStr;
+        }
+      }
+
+      function getCSRFToken() {
+        const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]");
+        return csrfToken ? csrfToken.value : "";
+      }
+
+      function showToast(message, type = "success") {
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+                <span>${type === "success" ? "✅" : "❌"}</span>
+                <span>${message}</span>
+            `;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+      }
+
+      // ============ API FUNCTIONS ============
+      async function apiRequest(endpoint, method = "GET", data = null) {
+        const url = `${API_BASE_URL}${endpoint}`;
+        console.log(`API ${method} ${url}`);
+
+        const options = {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken(),
+          },
+        };
+
+        if (data && method !== "GET") {
+          options.body = JSON.stringify(data);
+        }
+
+        try {
+          const response = await fetch(url, options);
+
+          if (response.status === 204) {
+            return { success: true };
+          }
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const result = await response.json();
+          return result;
+        } catch (error) {
+          console.error("API Request Error:", error);
+          showToast("Something went wrong! Please try again.", "error");
+          throw error;
+        }
+      }
+
+      // ============ NAVIGATION ============
+      function showPage(page) {
+        console.log("Showing page:", page);
+
+        // Hide all pages
+        document.querySelectorAll(".page-section").forEach((p) => {
+          p.classList.remove("active");
+        });
+
+        // Show selected page
+        const pageElement = document.getElementById(page);
+        if (pageElement) {
+          pageElement.classList.add("active");
+        }
+
+        // Update nav links
+        document.querySelectorAll(".nav-link").forEach((link) => {
+          link.classList.remove("active");
+          if (link.dataset.page === page) {
+            link.classList.add("active");
+          }
+        });
+
+        // Close mobile sidebar
+        document.getElementById("sidebar").classList.remove("open");
+
+        // Load page data
+        loadPageData(page);
+      }
+
+      function toggleSidebar() {
+        document.getElementById("sidebar").classList.toggle("open");
+      }
+
+      // ============ PAGE DATA LOADING ============
+      async function loadPageData(page) {
+        console.log("Loading data for page:", page);
+
+        try {
+          switch (page) {
+            case "dashboard":
+              await loadDashboard();
+              break;
+            case "donations":
+              await loadDonors();
+              break;
+            case "expenses":
+              await loadExpenses();
+              break;
+          }
+        } catch (error) {
+          console.error(`Failed to load ${page}:`, error);
+          showToast(`Failed to load ${page} data`, "error");
+        }
+      }
+
+      // ============ DASHBOARD ============
+
+      // ============ DASHBOARD ============
+      async function loadDashboard() {
+        console.log("Loading dashboard...");
+
+        // Clear previous content while loading
+        document.getElementById("stats-grid").innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1">
+                    <div>⏳</div>
+                    <p>Loading dashboard data...</p>
+                </div>
+            `;
+
+        try {
+          // Fetch dashboard stats
+          const statsResponse = await fetch("/api/dashboard/");
+          if (!statsResponse.ok) {
+            throw new Error(`Dashboard API error: ${statsResponse.status}`);
+          }
+          const stats = await statsResponse.json();
+          console.log("Dashboard stats:", stats);
+
+          // Fetch charts data
+          const chartsResponse = await fetch("/api/charts-data/");
+          if (!chartsResponse.ok) {
+            throw new Error(`Charts API error: ${chartsResponse.status}`);
+          }
+          const chartsData = await chartsResponse.json();
+          console.log("Charts data:", chartsData);
+
+          // Fetch recent activity
+          const activityResponse = await fetch("/api/recent-activity/");
+          if (!activityResponse.ok) {
+            throw new Error(`Activity API error: ${activityResponse.status}`);
+          }
+          const recentActivity = await activityResponse.json();
+          console.log("Recent activity:", recentActivity);
+
+          // Render all data
+          renderStats(stats);
+          renderCharts(chartsData);
+          renderRecentActivity(recentActivity);
+        } catch (error) {
+          console.error("Failed to load dashboard:", error);
+
+          // Try to fetch donors and expenses separately
+          try {
+            console.log("Trying to fetch data separately...");
+
+            // Fetch donors
+            const donorsResponse = await fetch("/api/donors/");
+            const donors = donorsResponse.ok ? await donorsResponse.json() : [];
+
+            // Fetch expenses
+            const expensesResponse = await fetch("/api/expenses/");
+            const expenses = expensesResponse.ok
+              ? await expensesResponse.json()
+              : [];
+
+            console.log("Donors data:", donors);
+            console.log("Expenses data:", expenses);
+
+            // Calculate stats from fetched data
+            const totalDonations = Array.isArray(donors)
+              ? donors.reduce((sum, d) => sum + (parseFloat(d.amount) || 0), 0)
+              : 0;
+
+            const totalExpenses = Array.isArray(expenses)
+              ? expenses.reduce(
+                  (sum, e) => sum + (parseFloat(e.amount) || 0),
+                  0
+                )
+              : 0;
+
+            const donationCount = Array.isArray(donors) ? donors.length : 0;
+            const expenseCount = Array.isArray(expenses) ? expenses.length : 0;
+            const balance = totalDonations - totalExpenses;
+            const progress =
+              RENOVATION_GOAL > 0
+                ? (totalDonations / RENOVATION_GOAL) * 100
+                : 0;
+
+            const calculatedStats = {
+              total_donations: totalDonations,
+              total_expenses: totalExpenses,
+              available_balance: balance,
+              donation_count: donationCount,
+              expense_count: expenseCount,
+              renovation_goal: RENOVATION_GOAL,
+              progress_percentage: progress,
+            };
+
+            console.log("Calculated stats:", calculatedStats);
+            renderStats(calculatedStats);
+
+            // Calculate charts data from donors and expenses
+            if (Array.isArray(donors) && donors.length > 0) {
+              const paymentMethods = {};
+              donors.forEach((d) => {
+                const method = d.payment_method || "Cash";
+                paymentMethods[method] =
+                  (paymentMethods[method] || 0) + (parseFloat(d.amount) || 0);
+              });
+
+              const donationsByPayment = Object.entries(paymentMethods).map(
+                ([method, total]) => ({
+                  payment_method: method,
+                  total: total,
+                })
+              );
+
+              console.log(
+                "Calculated donations by payment:",
+                donationsByPayment
+              );
+            }
+
+            if (Array.isArray(expenses) && expenses.length > 0) {
+              const categories = {};
+              expenses.forEach((e) => {
+                const category = e.category || "Other";
+                categories[category] =
+                  (categories[category] || 0) + (parseFloat(e.amount) || 0);
+              });
+
+              const expensesByCategory = Object.entries(categories).map(
+                ([category, total]) => ({
+                  category: category,
+                  total: total,
+                })
+              );
+
+              console.log(
+                "Calculated expenses by category:",
+                expensesByCategory
+              );
+            }
+
+            // Get recent activity (latest 5)
+            const recentDonations = Array.isArray(donors)
+              ? [...donors]
+                  .sort((a, b) => {
+                    const dateA = a.date ? new Date(a.date).getTime() : 0;
+                    const dateB = b.date ? new Date(b.date).getTime() : 0;
+                    return dateB - dateA;
+                  })
+                  .slice(0, 5)
+              : [];
+
+            const recentExpenses = Array.isArray(expenses)
+              ? [...expenses]
+                  .sort((a, b) => {
+                    const dateA = a.date ? new Date(a.date).getTime() : 0;
+                    const dateB = b.date ? new Date(b.date).getTime() : 0;
+                    return dateB - dateA;
+                  })
+                  .slice(0, 5)
+              : [];
+
+            const calculatedActivity = {
+              recent_donations: recentDonations,
+              recent_expenses: recentExpenses,
+            };
+
+            // Create charts data structure
+            const calculatedCharts = {
+              donations_by_payment:
+                Array.isArray(donors) && donors.length > 0
+                  ? Object.entries(
+                      donors.reduce((acc, d) => {
+                        const method = d.payment_method || "Cash";
+                        acc[method] =
+                          (acc[method] || 0) + (parseFloat(d.amount) || 0);
+                        return acc;
+                      }, {})
+                    ).map(([method, total]) => ({
+                      payment_method: method,
+                      total: total,
+                    }))
+                  : [{ payment_method: "No Data", total: 0 }],
+
+              expenses_by_category:
+                Array.isArray(expenses) && expenses.length > 0
+                  ? Object.entries(
+                      expenses.reduce((acc, e) => {
+                        const category = e.category || "Other";
+                        acc[category] =
+                          (acc[category] || 0) + (parseFloat(e.amount) || 0);
+                        return acc;
+                      }, {})
+                    ).map(([category, total]) => ({
+                      category: category,
+                      total: total,
+                    }))
+                  : [{ category: "No Data", total: 0 }],
+            };
+
+            renderCharts(calculatedCharts);
+            renderRecentActivity(calculatedActivity);
+
+            if (!donorsResponse.ok || !expensesResponse.ok) {
+              showToast(
+                "Using calculated data from separate endpoints",
+                "info"
+              );
+            }
+          } catch (innerError) {
+            console.error("Failed to calculate data:", innerError);
+
+            // Show empty state
+            document.getElementById("stats-grid").innerHTML = `
+                        <div class="empty-state" style="grid-column: 1 / -1">
+                            <div>⚠️</div>
+                            <p>Unable to load dashboard data</p>
+                            <p class="small">Error: ${innerError.message}</p>
+                            <button class="btn btn-primary" onclick="loadDashboard()">Retry</button>
+                        </div>
+                    `;
+
+            document.getElementById("progress-card").innerHTML = `
+                        <h3>🏛️ Renovation Progress</h3>
+                        <div class="empty-state">
+                            <div>📊</div>
+                            <p>Data not available</p>
+                            <button class="btn btn-secondary" onclick="loadDashboard()">Try Again</button>
+                        </div>
+                    `;
+
+            // Clear charts containers
+            const donationCtx = document.getElementById("donationChart");
+            const expenseCtx = document.getElementById("expenseChart");
+            if (donationCtx) {
+              donationCtx.parentElement.innerHTML =
+                '<p class="empty-state">Chart data not available</p>';
+            }
+            if (expenseCtx) {
+              expenseCtx.parentElement.innerHTML =
+                '<p class="empty-state">Chart data not available</p>';
+            }
+
+            // Clear activity lists
+            document.getElementById("recent-donations").innerHTML = `
+                        <li class="empty-state">
+                            <div>📭</div>
+                            <p>No donation data available</p>
+                        </li>
+                    `;
+
+            document.getElementById("recent-expenses").innerHTML = `
+                        <li class="empty-state">
+                            <div>📝</div>
+                            <p>No expense data available</p>
+                        </li>
+                    `;
+
+            showToast("Failed to load dashboard data", "error");
+          }
+        }
+      }
+
+      function renderStats(stats) {
+        if (!stats) {
+          console.error("No stats data provided");
+          return;
+        }
+
+        const progress = stats.progress_percentage || 0;
+        const totalDonations = stats.total_donations || 0;
+        const totalExpenses = stats.total_expenses || 0;
+        const balance = stats.available_balance || 0;
+        const donationCount = stats.donation_count || 0;
+        const expenseCount = stats.expense_count || 0;
+        const goal = stats.renovation_goal || RENOVATION_GOAL;
+
+        console.log("Rendering stats with:", {
+          progress,
+          totalDonations,
+          totalExpenses,
+          balance,
+          donationCount,
+          expenseCount,
+          goal,
+        });
+
+        document.getElementById("stats-grid").innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-icon donations">💝</div>
+                    <div class="stat-content">
+                        <h3>Total Donations</h3>
+                        <div class="stat-value">${formatCurrency(
+                          totalDonations
+                        )}</div>
+                        <div class="stat-change positive">${donationCount} donors</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon expenses">💸</div>
+                    <div class="stat-content">
+                        <h3>Total Expenses</h3>
+                        <div class="stat-value">${formatCurrency(
+                          totalExpenses
+                        )}</div>
+                        <div class="stat-change">${expenseCount} transactions</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon balance">💰</div>
+                    <div class="stat-content">
+                        <h3>Available Balance</h3>
+                        <div class="stat-value">${formatCurrency(balance)}</div>
+                        <div class="stat-change ${
+                          balance >= 0 ? "positive" : ""
+                        }">
+                            ${balance >= 0 ? "Ready to use" : "Review expenses"}
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon goal">🎯</div>
+                    <div class="stat-content">
+                        <h3>Renovation Goal</h3>
+                        <div class="stat-value">${formatCurrency(goal)}</div>
+                        <div class="stat-change positive">${progress.toFixed(
+                          1
+                        )}% achieved</div>
+                    </div>
+                </div>
+            `;
+
+        document.getElementById("progress-card").innerHTML = `
+                <h3>🏛️ Renovation Progress</h3>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: ${Math.min(
+                      progress,
+                      100
+                    )}%"></div>
+                </div>
+                <div class="progress-stats">
+                    <span>Collected: ${formatCurrency(totalDonations)}</span>
+                    <span>${progress.toFixed(1)}%</span>
+                    <span>Goal: ${formatCurrency(goal)}</span>
+                </div>
+            `;
+      }
+
+      function renderCharts(chartsData) {
+        console.log("Rendering charts with data:", chartsData);
+
+        // Destroy existing charts if they exist
+        if (window.donationChart) {
+          window.donationChart.destroy();
+        }
+        if (window.expenseChart) {
+          window.expenseChart.destroy();
+        }
+
+        // Donation Chart - By Payment Method
+        const donationCtx = document.getElementById("donationChart");
+        if (donationCtx) {
+          const paymentData = chartsData.donations_by_payment || [];
+          console.log("Payment data for chart:", paymentData);
+
+          if (paymentData.length > 0) {
+            const paymentLabels = paymentData.map(
+              (item) => item.payment_method || "Unknown"
+            );
+            const paymentAmounts = paymentData.map(
+              (item) => parseFloat(item.total) || 0
+            );
+
+            // Check if we have any data
+            const hasData = paymentAmounts.some((amount) => amount > 0);
+
+            if (hasData) {
+              window.donationChart = new Chart(donationCtx.getContext("2d"), {
+                type: "doughnut",
+                data: {
+                  labels: paymentLabels,
+                  datasets: [
+                    {
+                      data: paymentAmounts,
+                      backgroundColor: [
+                        "#22C55E",
+                        "#6366F1",
+                        "#3B82F6",
+                        "#F59E0B",
+                        "#EC4899",
+                        "#8B5CF6",
+                      ],
+                      borderWidth: 0,
+                    },
+                  ],
+                },
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      position: "bottom",
+                    },
+                    tooltip: {
+                      callbacks: {
+                        label: function (context) {
+                          const label = context.label || "";
+                          const value = context.parsed || 0;
+                          const total = context.dataset.data.reduce(
+                            (a, b) => a + b,
+                            0
+                          );
+                          const percentage =
+                            total > 0 ? Math.round((value / total) * 100) : 0;
+                          return `${label}: ${formatCurrency(
+                            value
+                          )} (${percentage}%)`;
+                        },
+                      },
+                    },
+                  },
+                },
+              });
+            } else {
+              donationCtx.parentElement.innerHTML =
+                '<p class="empty-state">No donation data available for chart</p>';
+            }
+          } else {
+            donationCtx.parentElement.innerHTML =
+              '<p class="empty-state">No donation payment data available</p>';
+          }
+        }
+
+        // Expense Chart - By Category
+        const expenseCtx = document.getElementById("expenseChart");
+        if (expenseCtx) {
+          const categoryData = chartsData.expenses_by_category || [];
+          console.log("Category data for chart:", categoryData);
+
+          if (categoryData.length > 0) {
+            const categoryLabels = categoryData.map(
+              (item) => item.category || "Other"
+            );
+            const categoryAmounts = categoryData.map(
+              (item) => parseFloat(item.total) || 0
+            );
+
+            // Check if we have any data
+            const hasData = categoryAmounts.some((amount) => amount > 0);
+
+            if (hasData) {
+              window.expenseChart = new Chart(expenseCtx.getContext("2d"), {
+                type: "bar",
+                data: {
+                  labels: categoryLabels,
+                  datasets: [
+                    {
+                      label: "Amount Spent",
+                      data: categoryAmounts,
+                      backgroundColor: "#FF9933",
+                      borderRadius: 8,
+                    },
+                  ],
+                },
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      display: false,
+                    },
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      ticks: {
+                        callback: function (value) {
+                          return "₹" + value / 1000 + "K";
+                        },
+                      },
+                    },
+                  },
+                },
+              });
+            } else {
+              expenseCtx.parentElement.innerHTML =
+                '<p class="empty-state">No expense data available for chart</p>';
+            }
+          } else {
+            expenseCtx.parentElement.innerHTML =
+              '<p class="empty-state">No expense category data available</p>';
+          }
+        }
+      }
+
+      function renderRecentActivity(recentActivity) {
+        console.log("Rendering recent activity with:", recentActivity);
+
+        const recentDonations = recentActivity.recent_donations || [];
+        const recentExpenses = recentActivity.recent_expenses || [];
+
+        const donationsList = document.getElementById("recent-donations");
+        const expensesList = document.getElementById("recent-expenses");
+
+        if (donationsList) {
+          if (recentDonations.length > 0) {
+            donationsList.innerHTML = recentDonations
+              .map(
+                (d) => `
+                        <li class="activity-item">
+                            <div class="activity-icon donation">🙏</div>
+                            <div class="activity-details">
+                                <div class="activity-name">${
+                                  d.name || "Anonymous"
+                                }</div>
+                                <div class="activity-date">${formatDate(
+                                  d.date
+                                )}</div>
+                            </div>
+                            <div class="activity-amount donation">+${formatCurrency(
+                              d.amount || 0
+                            )}</div>
+                        </li>
+                    `
+              )
+              .join("");
+          } else {
+            donationsList.innerHTML = `
+                        <li class="empty-state">
+                            <div>📭</div>
+                            <p>No recent donations</p>
+                        </li>
+                    `;
+          }
+        }
+
+        if (expensesList) {
+          if (recentExpenses.length > 0) {
+            expensesList.innerHTML = recentExpenses
+              .map(
+                (e) => `
+                        <li class="activity-item">
+                            <div class="activity-icon expense">💸</div>
+                            <div class="activity-details">
+                                <div class="activity-name">${
+                                  e.title || "Untitled"
+                                }</div>
+                                <div class="activity-date">${formatDate(
+                                  e.date
+                                )}</div>
+                            </div>
+                            <div class="activity-amount expense">-${formatCurrency(
+                              e.amount || 0
+                            )}</div>
+                        </li>
+                    `
+              )
+              .join("");
+          } else {
+            expensesList.innerHTML = `
+                        <li class="empty-state">
+                            <div>📝</div>
+                            <p>No recent expenses</p>
+                        </li>
+                    `;
+          }
+        }
+      }
+
+      // ============ DONORS ============
+      async function loadDonors() {
+        console.log("Loading donors...");
+        try {
+          const response = await apiRequest("/donors/");
+
+          // Handle different response formats
+          if (Array.isArray(response)) {
+            currentDonors = response;
+          } else if (response && response.results) {
+            currentDonors = response.results;
+          } else {
+            currentDonors = [];
+          }
+
+          renderDonorsTable(currentDonors);
+        } catch (error) {
+          console.error("Failed to load donors:", error);
+          document.getElementById("donors-table").innerHTML = `
+                    <tr><td colspan="6" class="empty-state">
+                        <div>⚠️ Failed to load donors</div>
+                        <button class="btn btn-primary" onclick="loadDonors()">Retry</button>
+                    </td></tr>
+                `;
+        }
+      }
+
+      function renderDonorsTable(donors) {
+        const tbody = document.getElementById("donors-table");
+        if (!tbody) {
+          console.error("Donors table body not found!");
+          return;
+        }
+
+        if (!donors || donors.length === 0) {
+          tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div>📭</div>
+                            <p>No donors found</p>
+                            <button class="btn btn-primary" onclick="openDonorModal()">Add First Donor</button>
+                        </td>
+                    </tr>
+                `;
+          return;
+        }
+
+        tbody.innerHTML = donors
+          .map((d) => {
+            const paymentMethod = d.payment_method || "Cash";
+            const badgeClass = paymentMethod.toLowerCase().replace(" ", "-");
+
+            return `
+                <tr>
+                    <td><strong>${d.name || "Anonymous"}</strong></td>
+                    <td>
+                        ${d.phone ? `<div>📱 ${d.phone}</div>` : ""}
+                        ${d.email ? `<div>✉️ ${d.email}</div>` : ""}
+                    </td>
+                    <td><strong>${formatCurrency(d.amount || 0)}</strong></td>
+                    <td><span class="badge badge-${badgeClass}">${paymentMethod}</span></td>
+                    <td>${formatDate(d.date)}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="action-btn edit" onclick="editDonor('${
+                              d.id
+                            }')" title="Edit">✏️</button>
+                            <button class="action-btn delete" onclick="deleteDonor('${
+                              d.id
+                            }')" title="Delete">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+                `;
+          })
+          .join("");
+      }
+
+      async function filterDonors() {
+        const search = document.getElementById("donor-search").value;
+        const payment = document.getElementById("payment-filter").value;
+
+        let endpoint = "/donors/?";
+        const params = new URLSearchParams();
+
+        if (search) params.append("search", search);
+        if (payment) params.append("payment_method", payment);
+
+        endpoint += params.toString();
+
+        try {
+          const response = await apiRequest(endpoint);
+          const donors = Array.isArray(response)
+            ? response
+            : response.results || [];
+          renderDonorsTable(donors);
+        } catch (error) {
+          console.error("Failed to filter donors:", error);
+        }
+      }
+
+      function openDonorModal(donor = null) {
+        document.getElementById("donor-modal-title").textContent = donor
+          ? "Edit Donor"
+          : "Add New Donor";
+        document.getElementById("donor-id").value = donor ? donor.id : "";
+        document.getElementById("donor-name").value = donor ? donor.name : "";
+        document.getElementById("donor-email").value = donor ? donor.email : "";
+        document.getElementById("donor-phone").value = donor ? donor.phone : "";
+        document.getElementById("donor-amount").value = donor
+          ? donor.amount
+          : "";
+        document.getElementById("donor-payment").value = donor
+          ? donor.payment_method
+          : "Cash";
+        document.getElementById("donor-date").value = donor
+          ? donor.date
+          : new Date().toISOString().split("T")[0];
+        document.getElementById("donor-modal").classList.add("active");
+      }
+
+      function closeDonorModal() {
+        document.getElementById("donor-modal").classList.remove("active");
+        document.getElementById("donor-form").reset();
+        document.getElementById("donor-id").value = "";
+      }
+
+      async function saveDonor(e) {
+        e.preventDefault();
+
+        const id = document.getElementById("donor-id").value;
+        const donorData = {
+          name: document.getElementById("donor-name").value,
+          email: document.getElementById("donor-email").value || null,
+          phone: document.getElementById("donor-phone").value || null,
+          amount: parseFloat(document.getElementById("donor-amount").value),
+          payment_method: document.getElementById("donor-payment").value,
+          date: document.getElementById("donor-date").value,
+        };
+
+        try {
+          if (id) {
+            await apiRequest(`/donors/${id}/`, "PUT", donorData);
+            showToast("Donor updated successfully!");
+          } else {
+            await apiRequest("/donors/", "POST", donorData);
+            showToast("Donor added successfully!");
+          }
+
+          closeDonorModal();
+          await loadDonors();
+          await loadDashboard();
+        } catch (error) {
+          showToast("Failed to save donor!", "error");
+        }
+      }
+
+      async function editDonor(id) {
+        try {
+          const donor = await apiRequest(`/donors/${id}/`);
+          openDonorModal(donor);
+        } catch (error) {
+          showToast("Failed to load donor!", "error");
+        }
+      }
+
+      async function deleteDonor(id) {
+        if (!confirm("Are you sure you want to delete this donor?")) return;
+
+        try {
+          await apiRequest(`/donors/${id}/`, "DELETE");
+          showToast("Donor deleted successfully!");
+          await loadDonors();
+          await loadDashboard();
+        } catch (error) {
+          showToast("Failed to delete donor!", "error");
+        }
+      }
+
+      // ============ EXPENSES ============
+      async function loadExpenses() {
+        console.log("Loading expenses...");
+        try {
+          const response = await apiRequest("/expenses/");
+
+          // Handle different response formats
+          if (Array.isArray(response)) {
+            currentExpenses = response;
+          } else if (response && response.results) {
+            currentExpenses = response.results;
+          } else {
+            currentExpenses = [];
+          }
+
+          renderExpensesTable(currentExpenses);
+        } catch (error) {
+          console.error("Failed to load expenses:", error);
+          document.getElementById("expenses-table").innerHTML = `
+                    <tr><td colspan="6" class="empty-state">
+                        <div>⚠️ Failed to load expenses</div>
+                        <button class="btn btn-primary" onclick="loadExpenses()">Retry</button>
+                    </td></tr>
+                `;
+        }
+      }
+
+      function renderExpensesTable(expenses) {
+        const tbody = document.getElementById("expenses-table");
+        if (!tbody) {
+          console.error("Expenses table body not found!");
+          return;
+        }
+
+        if (!expenses || expenses.length === 0) {
+          tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div>📝</div>
+                            <p>No expenses found</p>
+                            <button class="btn btn-primary" onclick="openExpenseModal()">Add First Expense</button>
+                        </td>
+                    </tr>
+                `;
+          return;
+        }
+
+        tbody.innerHTML = expenses
+          .map(
+            (e) => `
+                <tr>
+                    <td><strong>${e.title || "Untitled"}</strong></td>
+                    <td><span class="badge">${e.category || "Other"}</span></td>
+                    <td><strong>${formatCurrency(e.amount || 0)}</strong></td>
+                    <td>${formatDate(e.date)}</td>
+                    <td>${e.notes || "-"}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="action-btn edit" onclick="editExpense('${
+                              e.id
+                            }')" title="Edit">✏️</button>
+                            <button class="action-btn delete" onclick="deleteExpense('${
+                              e.id
+                            }')" title="Delete">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `
+          )
+          .join("");
+      }
+
+      async function filterExpenses() {
+        const search = document.getElementById("expense-search").value;
+        const category = document.getElementById("category-filter").value;
+
+        let endpoint = "/expenses/?";
+        const params = new URLSearchParams();
+
+        if (search) params.append("search", search);
+        if (category) params.append("category", category);
+
+        endpoint += params.toString();
+
+        try {
+          const response = await apiRequest(endpoint);
+          const expenses = Array.isArray(response)
+            ? response
+            : response.results || [];
+          renderExpensesTable(expenses);
+        } catch (error) {
+          console.error("Failed to filter expenses:", error);
+        }
+      }
+
+      function openExpenseModal(expense = null) {
+        document.getElementById("expense-modal-title").textContent = expense
+          ? "Edit Expense"
+          : "Add New Expense";
+        document.getElementById("expense-id").value = expense ? expense.id : "";
+        document.getElementById("expense-title").value = expense
+          ? expense.title
+          : "";
+        document.getElementById("expense-category").value = expense
+          ? expense.category
+          : "Construction";
+        document.getElementById("expense-amount").value = expense
+          ? expense.amount
+          : "";
+        document.getElementById("expense-date").value = expense
+          ? expense.date
+          : new Date().toISOString().split("T")[0];
+        document.getElementById("expense-notes").value = expense
+          ? expense.notes
+          : "";
+        document.getElementById("expense-modal").classList.add("active");
+      }
+
+      function closeExpenseModal() {
+        document.getElementById("expense-modal").classList.remove("active");
+        document.getElementById("expense-form").reset();
+        document.getElementById("expense-id").value = "";
+      }
+
+      async function saveExpense(e) {
+        e.preventDefault();
+
+        const id = document.getElementById("expense-id").value;
+        const expenseData = {
+          title: document.getElementById("expense-title").value,
+          category: document.getElementById("expense-category").value,
+          amount: parseFloat(document.getElementById("expense-amount").value),
+          date: document.getElementById("expense-date").value,
+          notes: document.getElementById("expense-notes").value || null,
+        };
+
+        try {
+          if (id) {
+            await apiRequest(`/expenses/${id}/`, "PUT", expenseData);
+            showToast("Expense updated successfully!");
+          } else {
+            await apiRequest("/expenses/", "POST", expenseData);
+            showToast("Expense added successfully!");
+          }
+
+          closeExpenseModal();
+          await loadExpenses();
+          await loadDashboard();
+        } catch (error) {
+          showToast("Failed to save expense!", "error");
+        }
+      }
+
+      async function editExpense(id) {
+        try {
+          const expense = await apiRequest(`/expenses/${id}/`);
+          openExpenseModal(expense);
+        } catch (error) {
+          showToast("Failed to load expense!", "error");
+        }
+      }
+
+      async function deleteExpense(id) {
+        if (!confirm("Are you sure you want to delete this expense?")) return;
+
+        try {
+          await apiRequest(`/expenses/${id}/`, "DELETE");
+          showToast("Expense deleted successfully!");
+          await loadExpenses();
+          await loadDashboard();
+        } catch (error) {
+          showToast("Failed to delete expense!", "error");
+        }
+      }
+
+      // ============ INITIALIZATION ============
+      document.addEventListener("DOMContentLoaded", function () {
+        console.log("DOM loaded, initializing app...");
+
+        // Set current date for date inputs
+        const today = new Date().toISOString().split("T")[0];
+        document.getElementById("donor-date").value = today;
+        document.getElementById("expense-date").value = today;
+
+        // Load dashboard by default
+        loadDashboard();
+
+        // Set up navigation click handlers
+        document.querySelectorAll(".nav-link").forEach((link) => {
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            const page = this.getAttribute("data-page");
+            showPage(page);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
